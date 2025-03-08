@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.server
+    restart: unless-stopped
+    networks:
+      - wisdom-network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    depends_on:
+      - server
+    env_file:
+      - .env.client
+    restart: on-failure
+    networks:
+      - wisdom-network
+
+networks:
+  wisdom-network:
+    driver: bridge 

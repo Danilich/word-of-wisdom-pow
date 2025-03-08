@@ -1,0 +1,40 @@
+# secure base image
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+# Build the Go binary
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o client ./cmd/client
+
+# Create a minimal production image
+FROM alpine:latest
+
+RUN apk update && apk upgrade && apk add ca-certificates tzdata
+
+# Reduce image size
+RUN rm -rf /var/cache/apk/* && \
+    rm -rf /tmp/*
+
+# Avoid running code as a root user
+RUN adduser -D appuser
+USER appuser
+
+WORKDIR /app
+
+# Copy only the necessary files
+COPY --from=builder /app/client .
+
+# Set environment variables
+ENV SERVER_ADDR=server:8080 \
+    READ_TIMEOUT=30s \
+    CONNECTION_TIMEOUT=30s \
+    NUM_CLIENTS=10 \
+    LOG_LEVEL=info
+
+CMD ["./client"] 

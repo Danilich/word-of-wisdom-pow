@@ -1,0 +1,22 @@
+*.exe
+*.out
+go.work
+
+# Environment variables
+!.env.prod
+
+# IDE specific files
+.idea/
+.vscode/
+
+
+# Build output
+bin/
+dist/
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/ 
