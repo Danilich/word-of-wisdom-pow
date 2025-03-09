@@ -68,9 +68,11 @@ func TestWorkerPool(t *testing.T) {
 		pool.Start(func(workerID int, conn net.Conn) {
 			handlerStarted.Done()
 
-			time.Sleep(10 * time.Millisecond)
+			if conn == mockConn {
+				defer wg.Done()
+			}
 
-			defer wg.Done()
+			time.Sleep(1 * time.Millisecond)
 			conn.Close()
 		})
 
