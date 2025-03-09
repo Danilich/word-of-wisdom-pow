@@ -33,15 +33,15 @@ func (m *mockPow) GenerateChallenge() []byte {
 	return m.challenge
 }
 
-func (m *mockPow) Verify(seed, proof []byte) bool {
+func (m *mockPow) Verify(_, proof []byte) bool {
 	if m.shouldVerify {
 		return bytes.Equal(proof, m.solution)
 	}
 	return false
 }
 
-func (m *mockPow) Solve(challenge []byte) []byte {
-	return m.solution
+func (m *mockPow) Solve(_ context.Context, _ []byte) ([]byte, error) {
+	return m.solution, nil
 }
 
 func (m *mockConn) Read(b []byte) (n int, err error)   { return m.readData.Read(b) }
@@ -49,7 +49,7 @@ func (m *mockConn) Write(b []byte) (n int, err error)  { return m.writeData.Writ
 func (m *mockConn) Close() error                       { m.closed = true; return nil }
 func (m *mockConn) LocalAddr() net.Addr                { return m.addr }
 func (m *mockConn) RemoteAddr() net.Addr               { return m.addr }
-func (m *mockConn) SetDeadline(t time.Time) error      { return nil }
+func (m *mockConn) SetDeadline(_ time.Time) error      { return nil }
 func (m *mockConn) SetReadDeadline(t time.Time) error  { return nil }
 func (m *mockConn) SetWriteDeadline(t time.Time) error { return nil }
 

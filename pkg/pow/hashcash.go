@@ -1,8 +1,10 @@
 package pow
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/binary"
+	"errors"
 	"math/rand"
 	"time"
 )
@@ -55,12 +57,19 @@ func (pow *Hashcash) Verify(challenge, proof []byte) bool {
 	return hasLeadingZeros(hash, pow.Difficulty)
 }
 
-// Solve finds a proof
-func (pow *Hashcash) Solve(challenge []byte) []byte {
+// Solve finds a proof that satisfies the challenge with the given difficulty
+func (pow *Hashcash) Solve(ctx context.Context, challenge []byte) ([]byte, error) {
 	var solution []byte
 	var attempts uint64
 
+	// Check if context is canceled
 	for {
+		select {
+		case <-ctx.Done():
+			return nil, errors.New("solving was canceled")
+		default:
+		}
+
 		attempts++
 		solution = make([]byte, NonceSize)
 		binary.BigEndian.PutUint64(solution, uint64(pow.random.Int63()))
@@ -75,7 +84,7 @@ func (pow *Hashcash) Solve(challenge []byte) []byte {
 		}
 	}
 
-	return solution
+	return solution, nil
 }
 
 // calculateHash calculate hash of the challenge and proof

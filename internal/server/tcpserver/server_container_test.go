@@ -3,6 +3,7 @@ package tcpserver
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -197,7 +198,12 @@ func (tc *testConnection) sendUnknownCommand() {
 
 func solvePoW(challenge []byte, difficulty uint8) []byte {
 	hashcash := pow.NewHashcash(difficulty)
-	return hashcash.Solve(challenge)
+	ctx := context.Background()
+	solution, err := hashcash.Solve(ctx, challenge)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to solve PoW challenge: %v", err))
+	}
+	return solution
 }
 
 func (tc *testConnection) close() {

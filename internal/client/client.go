@@ -2,6 +2,7 @@ package client
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"strings"
@@ -123,7 +124,16 @@ func (c *Client) Close() error {
 // solvePoW solves the proof of work challenge
 func (c *Client) solvePoW(seed []byte, difficulty uint8) []byte {
 	startTime := time.Now()
-	proof := pow.NewHashcash(difficulty).Solve(seed)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	proof, err := pow.NewHashcash(difficulty).Solve(ctx, seed)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to solve PoW challenge")
+		return nil
+	}
+
 	elapsed := time.Since(startTime)
 
 	log.Info().

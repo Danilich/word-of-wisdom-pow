@@ -1,6 +1,7 @@
 package pow
 
 import (
+	"context"
 	"encoding/binary"
 	"testing"
 )
@@ -61,7 +62,13 @@ func TestHashcash_Verify(t *testing.T) {
 func TestHashcash_Solve(t *testing.T) {
 	h := NewHashcash(1)
 	challenge := h.GenerateChallenge()
-	proof := h.Solve(challenge)
+
+	ctx := context.Background()
+	proof, err := h.Solve(ctx, challenge)
+
+	if err != nil {
+		t.Fatalf("Solve returned an error: %v", err)
+	}
 
 	if !h.Verify(challenge, proof) {
 		t.Errorf("Solve() returned invalid proof")
