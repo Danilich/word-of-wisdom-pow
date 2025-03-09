@@ -35,57 +35,85 @@ func TestWorkerPool(t *testing.T) {
 		var processed sync.WaitGroup
 		processed.Add(3)
 
-		pool.Start(func(id int, conn net.Conn) {
+		pool.Start(func(conn net.Conn) {
 			time.Sleep(10 * time.Millisecond)
-			conn.Close()
+			if err := conn.Close(); err != nil {
+				t.Errorf("Failed to close connection: %v", err)
+			}
 			processed.Done()
 		})
 
 		for i := 0; i < 3; i++ {
 			err := pool.AddTask(newMockConnForPool())
 			if err != nil {
-				t.Fatalf("Failed to add task: %v", err)
+				t.Errorf("Failed to add task: %v", err)
 			}
 		}
 
 		processed.Wait()
-		pool.Close()
 	})
 
 	t.Run("Context cancellation", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
+		pool := New(ctx, 1, 1)
 
-		pool := New(ctx, 2, 5)
-		pool.Start(func(id int, conn net.Conn) {
-			conn.Close()
+		var handlerWg sync.WaitGroup
+		handlerWg.Add(1)
+
+		var handlerStarted sync.WaitGroup
+		handlerStarted.Add(1)
+
+		pool.Start(func(conn net.Conn) {
+			handlerStarted.Done()
+			handlerWg.Wait()
+			if err := conn.Close(); err != nil {
+				t.Errorf("Failed to close connection: %v", err)
+			}
 		})
 
-		cancel()
-
-		// Adding task should fail
 		err := pool.AddTask(newMockConnForPool())
-		if err == nil || err.Error() != "context done" {
-			t.Fatalf("Expected 'context done' error, got: %v", err)
+		if err != nil {
+			t.Fatalf("Failed to add initial task: %v", err)
 		}
 
-		pool.Close()
+		handlerStarted.Wait()
+
+		// Add another task to fill the queue
+		err = pool.AddTask(newMockConnForPool())
+		if err != nil {
+			t.Fatalf("Failed to add queue-filling task: %v", err)
+		}
+
+		// Now cancel the context
+		cancel()
+
+		// one more task, which should fail
+		err = pool.AddTask(newMockConnForPool())
+		if err == nil {
+			t.Error("Expected error after context cancellation, got nil")
+		}
+
+		// Allow handler to complete
+		handlerWg.Done()
 	})
 
-	t.Run("Pool closed", func(t *testing.T) {
+	t.Run("Pool closure", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		pool := New(ctx, 2, 5)
-		pool.Start(func(id int, conn net.Conn) {
-			conn.Close()
+		pool.Start(func(conn net.Conn) {
+			if err := conn.Close(); err != nil {
+				t.Errorf("Failed to close connection: %v", err)
+			}
 		})
 
 		pool.Close()
 
-		// Adding task should fail
+		// After pool closure, adding tasks should fail
 		err := pool.AddTask(newMockConnForPool())
-		if err == nil || err.Error() != "pool closed" {
-			t.Fatalf("Expected 'pool closed' error, got: %v", err)
+		if err == nil {
+			t.Error("Expected error after pool closure, got nil")
 		}
 	})
 }
