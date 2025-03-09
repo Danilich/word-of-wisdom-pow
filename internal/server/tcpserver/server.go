@@ -12,6 +12,7 @@ import (
 	"word-of-wisdom-pow/internal/server/config"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/errgroup"
 )
 
 // Server represents a TCP server
@@ -52,43 +53,38 @@ func (s *Server) AcceptConnections(ctx context.Context) error {
 		Str("address", addr).
 		Msg("TCP Server started")
 
-	errChan := make(chan error, 1)
+	g, ctx := errgroup.WithContext(ctx)
 
-	go func() {
+	g.Go(func() error {
 		defer func(listener net.Listener) {
 			if err := listener.Close(); err != nil {
-				errChan <- fmt.Errorf("error closing listener: %w", err)
+				log.Error().Err(err).Msg("Error closing listener")
 			}
 		}(listener)
 
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return nil
 			default:
 				conn, err := listener.Accept()
 
 				if err != nil {
 					if ctx.Err() != nil {
-						return
+						return nil
 					}
-					errChan <- fmt.Errorf("error accepting connection: %w", err)
-					continue
+					return fmt.Errorf("error accepting connection: %w", err)
 				}
 
 				if err := s.HandleConnection(conn); err != nil {
-					errChan <- fmt.Errorf("error handling connection: %w", err)
+					return fmt.Errorf("error handling connection: %w", err)
 				}
 			}
 		}
-	}()
+	})
 
-	select {
-	case err := <-errChan:
-		return err
-	default:
-		return nil
-	}
+	// Wait for any errors from the goroutine
+	return g.Wait()
 }
 
 // HandleConnection adds the connection to the worker pool
