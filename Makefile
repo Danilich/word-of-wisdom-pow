@@ -36,7 +36,7 @@ test-server-container:
 	go test -race -v ./internal/server/tcpserver -run TestServerContainer
 
 install-lint:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.57.2
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.6
 
 # Run linter
 lint:
