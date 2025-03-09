@@ -124,7 +124,7 @@ func (s *Server) GracefulShutdown(cancel context.CancelFunc) error {
 }
 
 // processConnection processes each client connection within a worker
-func (s *Server) processConnection(conn net.Conn) {
+func (s *Server) processConnection(workerId int, conn net.Conn) {
 	s.wg.Add(1)
 	defer s.wg.Done()
 	defer func() {
@@ -133,5 +133,6 @@ func (s *Server) processConnection(conn net.Conn) {
 		}
 	}()
 
+	log.Info().Int("worker_id", workerId).Str("remote_addr", conn.RemoteAddr().String()).Msg("Processing connection")
 	s.handler.HandleClient(conn)
 }

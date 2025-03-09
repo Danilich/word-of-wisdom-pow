@@ -26,10 +26,12 @@ func New(ctx context.Context, workers, maxTasks int) *Pool {
 }
 
 // Start initializes the worker pool
-func (p *Pool) Start(handler func(net.Conn)) {
+func (p *Pool) Start(handler func(int, net.Conn)) {
 	for i := 0; i < p.workers; i++ {
 		p.wg.Add(1)
-		go func() {
+		workerId := i
+
+		go func(id int) {
 			defer p.wg.Done()
 			for {
 				select {
@@ -39,10 +41,10 @@ func (p *Pool) Start(handler func(net.Conn)) {
 					if !ok || conn == nil {
 						return
 					}
-					handler(conn)
+					handler(id, conn)
 				}
 			}
-		}()
+		}(workerId)
 	}
 }
 

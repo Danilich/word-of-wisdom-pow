@@ -35,7 +35,7 @@ func TestWorkerPool(t *testing.T) {
 		var processed sync.WaitGroup
 		processed.Add(3)
 
-		pool.Start(func(conn net.Conn) {
+		pool.Start(func(workerID int, conn net.Conn) {
 			time.Sleep(10 * time.Millisecond)
 			if err := conn.Close(); err != nil {
 				t.Errorf("Failed to close connection: %v", err)
@@ -57,44 +57,47 @@ func TestWorkerPool(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		pool := New(ctx, 1, 1)
 
-		var handlerWg sync.WaitGroup
-		handlerWg.Add(1)
+		var wg sync.WaitGroup
+		wg.Add(1)
 
 		var handlerStarted sync.WaitGroup
 		handlerStarted.Add(1)
 
-		pool.Start(func(conn net.Conn) {
+		mockConn := newMockConnForPool()
+
+		pool.Start(func(workerID int, conn net.Conn) {
 			handlerStarted.Done()
-			handlerWg.Wait()
-			if err := conn.Close(); err != nil {
-				t.Errorf("Failed to close connection: %v", err)
-			}
+
+			time.Sleep(10 * time.Millisecond)
+
+			defer wg.Done()
+			conn.Close()
 		})
 
-		err := pool.AddTask(newMockConnForPool())
-		if err != nil {
-			t.Fatalf("Failed to add initial task: %v", err)
+		// Add first task
+		if err := pool.AddTask(mockConn); err != nil {
+			t.Fatalf("Failed to add task: %v", err)
 		}
 
+		// Wait for handler to start
 		handlerStarted.Wait()
 
-		// Add another task to fill the queue
-		err = pool.AddTask(newMockConnForPool())
-		if err != nil {
+		// Add second task to fill queue
+		secondConn := newMockConnForPool()
+		if err := pool.AddTask(secondConn); err != nil {
 			t.Fatalf("Failed to add queue-filling task: %v", err)
 		}
 
-		// Now cancel the context
+		// Cancel context and verify new tasks are rejected
 		cancel()
-
-		// one more task, which should fail
-		err = pool.AddTask(newMockConnForPool())
-		if err == nil {
-			t.Error("Expected error after context cancellation, got nil")
+		if err := pool.AddTask(newMockConnForPool()); err == nil {
+			t.Error("Expected error after context cancellation")
 		}
 
-		// Allow handler to complete
-		handlerWg.Done()
+		wg.Wait()
+		if !mockConn.closed {
+			t.Error("Connection was not closed")
+		}
 	})
 
 	t.Run("Pool closure", func(t *testing.T) {
@@ -102,18 +105,29 @@ func TestWorkerPool(t *testing.T) {
 		defer cancel()
 
 		pool := New(ctx, 2, 5)
-		pool.Start(func(conn net.Conn) {
-			if err := conn.Close(); err != nil {
-				t.Errorf("Failed to close connection: %v", err)
-			}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		mockConn := newMockConnForPool()
+
+		pool.Start(func(workerID int, conn net.Conn) {
+			defer wg.Done()
+			conn.Close()
 		})
 
-		pool.Close()
+		if err := pool.AddTask(mockConn); err != nil {
+			t.Fatalf("Failed to add task: %v", err)
+		}
 
-		// After pool closure, adding tasks should fail
-		err := pool.AddTask(newMockConnForPool())
-		if err == nil {
-			t.Error("Expected error after pool closure, got nil")
+		wg.Wait()
+		if !mockConn.closed {
+			t.Error("Connection was not closed")
+		}
+
+		pool.Close()
+		if err := pool.AddTask(newMockConnForPool()); err == nil {
+			t.Error("Expected error after pool closure")
 		}
 	})
 }
