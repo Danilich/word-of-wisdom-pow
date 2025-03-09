@@ -1,4 +1,4 @@
-# Words of Wisdom Wisdom (Tcp server)
+# Word of Wisdom (Tcp server)
 
 A TCP server and client implementation demonstrating Proof of Work (PoW) using HashCash algorithm for DDoS protection.
 
