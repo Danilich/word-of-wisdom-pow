@@ -83,6 +83,10 @@ wisdom-pow/
 ├── pkg/                # Common libraries
 ```
 
+## Environment Configuration
+
+The project uses `.env.server` and `.env.client` files for configuration. These files contain settings for network addresses, timeouts, worker counts, and PoW difficulty levels. They're automatically loaded when running via make commands or Docker.
+
 ## How to Run
 
 The project includes several make commands for easy execution:
