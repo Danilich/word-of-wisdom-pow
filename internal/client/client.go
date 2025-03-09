@@ -23,8 +23,6 @@ const (
 	NewlineDelimiter = '\n'
 	// ErrInvalidSolution is the error for invalid solution
 	ErrInvalidSolution = "Invalid"
-	// ErrTimeout is the error message for timeout waiting for solution
-	ErrTimeout = "Timeout waiting for solution"
 )
 
 // Client represents a TCP client
@@ -85,11 +83,8 @@ func (c *Client) Start(ctx context.Context) error {
 	}
 
 	// Check for error responses
-	switch {
-	case strings.Contains(response, ErrInvalidSolution):
+	if strings.Contains(response, ErrInvalidSolution) {
 		return fmt.Errorf("server rejected solution: %s", response)
-	case strings.Contains(response, ErrTimeout):
-		return fmt.Errorf("server reported timeout: %s", response)
 	}
 
 	return nil

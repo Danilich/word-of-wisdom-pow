@@ -13,7 +13,7 @@ import (
 // Default client settings
 const (
 	DefaultServerAddr        = "localhost:8080"
-	DefaultReadTimeout       = 30 * time.Second
+	DefaultReadTimeout       = 10 * time.Second
 	DefaultConnectionTimeout = 30 * time.Second
 	DefaultLogLevel          = "info"
 	DefaultNumClients        = 10

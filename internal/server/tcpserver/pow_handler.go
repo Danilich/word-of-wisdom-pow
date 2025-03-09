@@ -138,10 +138,6 @@ func (h *PowHandler) readSolutionWithTimeout(ctx context.Context, conn net.Conn)
 
 	select {
 	case <-ctx.Done():
-		// Send timeout error to client
-		if err := h.sendErrorResponse(conn, ResponseSolutionTimeout); err != nil {
-			log.Error().Err(err).Str("client_addr", conn.RemoteAddr().String()).Msg("Failed to send timeout error response")
-		}
 		return nil, fmt.Errorf("timeout reading solution: %w", ctx.Err())
 	case res := <-resultCh:
 		if res.err != nil {
