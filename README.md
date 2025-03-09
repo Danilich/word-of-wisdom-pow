@@ -116,3 +116,17 @@ This test builds a Docker image of the server and runs integration tests against
 - Handling of invalid PoW solutions
 - Response to unknown commands
 - Multiple parallel connections
+
+## GitHub Actions
+
+This project uses GitHub Actions for continuous integration and delivery:
+
+### Go Workflow
+The Go workflow (`wisdom-job.yml`) runs on every push to main/master and pull requests:
+- Builds the application using `make build`
+- Builds Docker images for testing
+- Runs all tests with `make test`
+- Performs linting with `make lint`
+
+### Docker Workflow
+The Docker workflow (`docker.yml`) handles container image building and publishing
