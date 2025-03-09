@@ -9,7 +9,7 @@ import (
 	"sync"
 	"syscall"
 
-	"wisdom-pow/internal/server/config"
+	"word-of-wisdom-pow/internal/server/config"
 
 	"github.com/rs/zerolog/log"
 )
@@ -17,7 +17,6 @@ import (
 // Server represents a TCP server
 type Server struct {
 	handler   Handler
-	ctx       context.Context
 	wg        sync.WaitGroup
 	pool      *Pool
 	workerNum int
@@ -25,24 +24,23 @@ type Server struct {
 	config    config.Config
 }
 
-func NewServer(ctx context.Context, handler Handler, cfg config.Config) *Server {
-	pool := New(ctx, cfg.WorkerCount, cfg.MaxTasks)
+func NewServer(handler Handler, cfg config.Config) *Server {
 	server := &Server{
 		handler:   handler,
-		ctx:       ctx,
 		workerNum: cfg.WorkerCount,
 		maxTasks:  cfg.MaxTasks,
-		pool:      pool,
 		config:    cfg,
 	}
-
-	pool.Start(server.processConnection)
 
 	return server
 }
 
 // AcceptConnections handles accepting new TCP connections
-func (s *Server) AcceptConnections() error {
+func (s *Server) AcceptConnections(ctx context.Context) error {
+	// Initialize the worker pool
+	s.pool = New(ctx, s.workerNum, s.maxTasks)
+	s.pool.Start(s.processConnection)
+
 	addr := s.config.GetServerAddr()
 	listener, err := net.Listen("tcp", addr)
 
@@ -65,13 +63,13 @@ func (s *Server) AcceptConnections() error {
 
 		for {
 			select {
-			case <-s.ctx.Done():
+			case <-ctx.Done():
 				return
 			default:
 				conn, err := listener.Accept()
 
 				if err != nil {
-					if s.ctx.Err() != nil {
+					if ctx.Err() != nil {
 						return
 					}
 					errChan <- fmt.Errorf("error accepting connection: %w", err)

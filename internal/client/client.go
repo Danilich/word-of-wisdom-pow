@@ -9,8 +9,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"wisdom-pow/internal/client/config"
-	"wisdom-pow/pkg/pow"
+	"word-of-wisdom-pow/internal/client/config"
+	"word-of-wisdom-pow/pkg/pow"
 )
 
 const (
@@ -52,7 +52,7 @@ func Connect(cfg config.Config) (*Client, error) {
 // Start handles the initial PoW challenge from the server
 func (c *Client) Start() error {
 	if err := c.setReadDeadline(); err != nil {
-		return err
+		return fmt.Errorf("failed to set read deadline: %w", err)
 	}
 
 	// Read difficulty byte

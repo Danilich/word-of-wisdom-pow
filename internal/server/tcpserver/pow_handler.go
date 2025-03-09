@@ -9,8 +9,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"wisdom-pow/internal/server/config"
-	"wisdom-pow/internal/server/services"
+	"word-of-wisdom-pow/internal/server/config"
+	"word-of-wisdom-pow/internal/server/services"
 )
 
 // SolutionSize represents the size of the PoW solution in bytes
@@ -61,7 +61,7 @@ func (h *PowHandler) HandleClient(conn net.Conn) {
 
 	log.Debug().Int("command", cmdID).Str(clientAddrKey, remoteAddr).Msg("Received command")
 
-	if err := h.router.HandleCommand(cmdID, conn); err != nil {
+	if err := h.router.HandleCommand(connCtx, cmdID, conn); err != nil {
 		log.Error().Err(err).Str(clientAddrKey, remoteAddr).Int("command", cmdID).Msg("Failed to handle command")
 		return
 	}

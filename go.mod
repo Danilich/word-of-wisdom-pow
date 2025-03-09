@@ -1,4 +1,4 @@
-module wisdom-pow
+module word-of-wisdom-pow
 
 go 1.24
 

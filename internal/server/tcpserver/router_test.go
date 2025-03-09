@@ -9,7 +9,7 @@ import (
 
 func TestRouter_AddRoute(t *testing.T) {
 	ctx := context.Background()
-	router := NewRouter(ctx)
+	router := NewRouter()
 	cmdID := 1
 	handlerCalled := false
 
@@ -41,7 +41,7 @@ func TestRouter_AddRoute(t *testing.T) {
 
 func TestRouter_HandleCommand_Success(t *testing.T) {
 	ctx := context.Background()
-	router := NewRouter(ctx)
+	router := NewRouter()
 
 	cmdID := 42
 	handlerCalled := false
@@ -51,7 +51,7 @@ func TestRouter_HandleCommand_Success(t *testing.T) {
 	})
 
 	conn := newMockConn()
-	err := router.HandleCommand(cmdID, conn)
+	err := router.HandleCommand(ctx, cmdID, conn)
 
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -64,7 +64,7 @@ func TestRouter_HandleCommand_Success(t *testing.T) {
 
 func TestRouter_HandleCommand_UnknownCommand(t *testing.T) {
 	ctx := context.Background()
-	router := NewRouter(ctx)
+	router := NewRouter()
 
 	// Add a handler for command 1
 	router.AddRoute(1, func(ctx context.Context, conn net.Conn) error {
@@ -73,7 +73,7 @@ func TestRouter_HandleCommand_UnknownCommand(t *testing.T) {
 
 	conn := newMockConn()
 	unknownCmdID := 99
-	err := router.HandleCommand(unknownCmdID, conn)
+	err := router.HandleCommand(ctx, unknownCmdID, conn)
 
 	if err == nil {
 		t.Fatal("Expected error for unknown command, got nil")

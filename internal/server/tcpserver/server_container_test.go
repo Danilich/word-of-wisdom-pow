@@ -12,7 +12,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"wisdom-pow/pkg/pow"
+	"word-of-wisdom-pow/pkg/pow"
 )
 
 // testConnection represents a test connection with helper methods

@@ -12,8 +12,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"wisdom-pow/internal/client"
-	"wisdom-pow/internal/client/config"
+	"word-of-wisdom-pow/internal/client"
+	"word-of-wisdom-pow/internal/client/config"
 )
 
 func main() {

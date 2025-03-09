@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/rand"
 	"time"
-	"wisdom-pow/internal/server/domain"
+	"word-of-wisdom-pow/internal/server/domain"
 )
 
 // InMemoryRepository implements in-memory storage

@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"wisdom-pow/internal/server/tcpserver"
+	"word-of-wisdom-pow/internal/server/tcpserver"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"wisdom-pow/internal/server/config"
-	"wisdom-pow/internal/server/repository"
-	"wisdom-pow/internal/server/services"
+	"word-of-wisdom-pow/internal/server/config"
+	"word-of-wisdom-pow/internal/server/repository"
+	"word-of-wisdom-pow/internal/server/services"
 )
 
 func main() {
@@ -45,17 +45,17 @@ func run() error {
 	quotesService := services.NewQuotesService(quotesRepo)
 
 	// Create and configure router
-	router := tcpserver.NewRouter(ctx)
+	router := tcpserver.NewRouter()
 	router.AddRoute(tcpserver.HandlerQuote, tcpserver.QuoteHandler(quotesService))
 
 	// Create connection handler
 	connectionHandler := tcpserver.NewConnectionHandler(ctx, powService, cfg, router)
 
 	// Create TCP server
-	server := tcpserver.NewServer(ctx, connectionHandler, cfg)
+	server := tcpserver.NewServer(connectionHandler, cfg)
 
 	// Start accepting connections
-	if err := server.AcceptConnections(); err != nil {
+	if err := server.AcceptConnections(ctx); err != nil {
 		return fmt.Errorf("failed to accept connections: %w", err)
 	}
 

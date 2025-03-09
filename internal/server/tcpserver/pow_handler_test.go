@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"wisdom-pow/internal/server/config"
-	"wisdom-pow/internal/server/services"
+	"word-of-wisdom-pow/internal/server/config"
+	"word-of-wisdom-pow/internal/server/services"
 )
 
 type mockConn struct {
@@ -72,7 +72,7 @@ func TestPowHandler_SendChallenge(t *testing.T) {
 		Difficulty:        8,
 	}
 
-	router := NewRouter(ctx)
+	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
 	conn := newMockConn()
 	challenge := strToBytes("challenge")
@@ -92,7 +92,7 @@ func TestPowHandler_ReadCommand(t *testing.T) {
 		ConnectionTimeout: 5 * time.Second,
 		Difficulty:        8,
 	}
-	router := NewRouter(ctx)
+	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
 
 	conn := newMockConn()
@@ -123,7 +123,7 @@ func TestPowHandler_ProcessPowChallenge_Success(t *testing.T) {
 		ConnectionTimeout: 5 * time.Second,
 		Difficulty:        8,
 	}
-	router := NewRouter(ctx)
+	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
 
 	conn := newMockConn()
@@ -155,7 +155,7 @@ func TestPowHandler_ProcessPowChallenge_Failure(t *testing.T) {
 		ConnectionTimeout: 5 * time.Second,
 		Difficulty:        8,
 	}
-	router := NewRouter(ctx)
+	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
 
 	conn := newMockConn()
@@ -182,7 +182,7 @@ func TestPowHandler_ReadSolutionWithTimeout(t *testing.T) {
 		ConnectionTimeout: 5 * time.Second,
 		Difficulty:        8,
 	}
-	router := NewRouter(ctx)
+	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
 
 	conn := newMockConn()
@@ -220,7 +220,7 @@ func TestPowHandler_HandleClient(t *testing.T) {
 		Difficulty:        8,
 	}
 
-	router := NewRouter(ctx)
+	router := NewRouter()
 	cmdID := 42
 	cmdHandled := false
 	router.AddRoute(cmdID, func(ctx context.Context, conn net.Conn) error {
@@ -261,7 +261,7 @@ func TestPowHandler_HandleClient_InvalidPow(t *testing.T) {
 		Difficulty:        8,
 	}
 
-	router := NewRouter(ctx)
+	router := NewRouter()
 	cmdHandled := false
 	router.AddRoute(1, func(ctx context.Context, conn net.Conn) error {
 		cmdHandled = true

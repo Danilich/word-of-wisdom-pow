@@ -11,13 +11,11 @@ type HandlerFunc func(ctx context.Context, conn net.Conn) error
 // Router manages command routing for the TCP server
 type Router struct {
 	routes map[int]HandlerFunc
-	ctx    context.Context
 }
 
-func NewRouter(ctx context.Context) *Router {
+func NewRouter() *Router {
 	return &Router{
 		routes: make(map[int]HandlerFunc),
-		ctx:    ctx,
 	}
 }
 
@@ -28,7 +26,7 @@ func (r *Router) AddRoute(cmdID int, handler HandlerFunc) *Router {
 }
 
 // HandleCommand processes by ID
-func (r *Router) HandleCommand(cmdID int, conn net.Conn) error {
+func (r *Router) HandleCommand(ctx context.Context, cmdID int, conn net.Conn) error {
 	handler, exists := r.routes[cmdID]
 	if !exists {
 		_, err := conn.Write([]byte(ResponseUnknownCommand))
@@ -38,5 +36,5 @@ func (r *Router) HandleCommand(cmdID int, conn net.Conn) error {
 		return fmt.Errorf("unknown command: %d", cmdID)
 	}
 
-	return handler(r.ctx, conn)
+	return handler(ctx, conn)
 }

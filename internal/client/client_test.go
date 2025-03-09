@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"wisdom-pow/internal/client/config"
+	"word-of-wisdom-pow/internal/client/config"
 )
 
 type mockConn struct {

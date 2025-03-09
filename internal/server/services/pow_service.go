@@ -1,7 +1,7 @@
 package services
 
 import (
-	"wisdom-pow/pkg/pow"
+	"word-of-wisdom-pow/pkg/pow"
 )
 
 // PowService is a proof of work service
