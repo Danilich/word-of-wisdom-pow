@@ -51,7 +51,7 @@ func Connect(cfg config.Config) (*Client, error) {
 }
 
 // Start handles the initial PoW challenge from the server
-func (c *Client) Start() error {
+func (c *Client) Start(ctx context.Context) error {
 	if err := c.setReadDeadline(); err != nil {
 		return fmt.Errorf("failed to set read deadline: %w", err)
 	}
@@ -73,7 +73,7 @@ func (c *Client) Start() error {
 	log.Debug().Bytes("challenge", challenge).Msg("Received PoW challenge")
 
 	// Solve and send solution
-	solution := c.solvePoW(challenge, difficulty)
+	solution := c.solvePoW(ctx, challenge, difficulty)
 	if _, err = c.conn.Write(solution); err != nil {
 		return fmt.Errorf("failed to send solution: %w", err)
 	}
@@ -122,11 +122,8 @@ func (c *Client) Close() error {
 }
 
 // solvePoW solves the proof of work challenge
-func (c *Client) solvePoW(seed []byte, difficulty uint8) []byte {
+func (c *Client) solvePoW(ctx context.Context, seed []byte, difficulty uint8) []byte {
 	startTime := time.Now()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	proof, err := pow.NewHashcash(difficulty).Solve(ctx, seed)
 	if err != nil {

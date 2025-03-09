@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"io"
 	"net"
 	"strings"
@@ -46,7 +47,7 @@ func TestClientStart(t *testing.T) {
 	}
 
 	client := NewClient(mockConn, cfg)
-	err := client.Start()
+	err := client.Start(context.Background())
 	assert.NoError(t, err, "Expected no error from Start")
 	assert.Greater(t, len(mockConn.writeBuf), 0, "Expected client to write to connection")
 }
@@ -66,7 +67,6 @@ func TestGetQuote(t *testing.T) {
 	}
 
 	client := NewClient(mockConn, cfg)
-
 	quote, err := client.GetQuote()
 
 	assert.NoError(t, err, "Expected no error from GetQuote")

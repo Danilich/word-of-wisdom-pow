@@ -89,7 +89,7 @@ func runClient(ctx context.Context, cfg config.Config, clientID int) error {
 	}()
 
 	// Handle PoW challenge
-	if err := c.Start(); err != nil {
+	if err := c.Start(ctx); err != nil {
 		return fmt.Errorf("PoW challenge failed: %w", err)
 	}
 
