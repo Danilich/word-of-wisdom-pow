@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
+    image: wisdom-pow-server
     ports:
       - "8080:8080"
     env_file:
@@ -17,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.client
+    image: wisdom-pow-client
     depends_on:
       - server
     env_file:

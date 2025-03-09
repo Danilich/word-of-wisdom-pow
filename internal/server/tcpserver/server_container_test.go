@@ -40,7 +40,7 @@ func TestServerContainer(t *testing.T) {
 	ctx := context.Background()
 
 	req := testcontainers.ContainerRequest{
-		Image:        "wisdom-pow2-server:latest",
+		Image:        "wisdom-pow-server:latest",
 		ExposedPorts: []string{"8080/tcp"},
 		Env: map[string]string{
 			"TCP_ADDR":           "0.0.0.0",

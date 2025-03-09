@@ -39,10 +39,7 @@ func (p *Pool) Start(handler func(net.Conn)) {
 					if !ok || conn == nil {
 						return
 					}
-					func() {
-						defer func() { recover() }()
-						handler(conn)
-					}()
+					handler(conn)
 				}
 			}
 		}()
