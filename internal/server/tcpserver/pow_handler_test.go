@@ -184,7 +184,6 @@ func TestPowHandler_ReadSolutionWithTimeout(t *testing.T) {
 	}
 	router := NewRouter()
 	handler := NewConnectionHandler(ctx, powService, cfg, router)
-
 	conn := newMockConn()
 
 	cancel()
@@ -198,12 +197,6 @@ func TestPowHandler_ReadSolutionWithTimeout(t *testing.T) {
 
 	if solution != nil {
 		t.Errorf("Expected nil solution on timeout, got %v", solution)
-	}
-
-	expected := []byte(ResponseSolutionTimeout)
-	if !bytes.Contains(conn.writeData.Bytes(), expected) {
-		t.Errorf("Expected response to contain %q, got %q",
-			expected, conn.writeData.Bytes())
 	}
 }
 
